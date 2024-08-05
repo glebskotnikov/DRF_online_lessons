@@ -1,5 +1,5 @@
 from django.urls import path
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import DefaultRouter
 
 from lms.apps import LmsConfig
 from lms.views import (CourseViewSet, LessonCreateAPIView,
@@ -8,7 +8,7 @@ from lms.views import (CourseViewSet, LessonCreateAPIView,
 
 app_name = LmsConfig.name
 
-router = SimpleRouter()
+router = DefaultRouter()
 router.register(r"courses", CourseViewSet, basename="courses")
 
 urlpatterns = [
