@@ -10,6 +10,10 @@ class Course(models.Model):
     )
     description = models.TextField(verbose_name="описание курса")
 
+    owner = models.ForeignKey(
+        "users.User", on_delete=models.SET_NULL, **NULLABLE, verbose_name="владелец"
+    )
+
     class Meta:
         verbose_name = "курс"
         verbose_name_plural = "курсы"
@@ -25,6 +29,10 @@ class Lesson(models.Model):
         upload_to="lessons/image", verbose_name="превью урока", **NULLABLE
     )
     link = models.CharField(max_length=250, verbose_name="ссылка на видео", **NULLABLE)
+
+    owner = models.ForeignKey(
+        "users.User", on_delete=models.SET_NULL, **NULLABLE, verbose_name="владелец"
+    )
 
     class Meta:
         verbose_name = "урок"

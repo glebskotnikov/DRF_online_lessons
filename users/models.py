@@ -1,8 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from lms.models import Course, Lesson
-
 NULLABLE = {"blank": True, "null": True}
 
 
@@ -35,10 +33,16 @@ class Payment(models.Model):
     )
     payment_date = models.DateTimeField(auto_now_add=True, verbose_name="дата оплаты")
     course = models.ForeignKey(
-        Course, null=True, on_delete=models.SET_NULL, verbose_name="оплаченный курс"
+        "lms.Course",
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="оплаченный курс",
     )
     lesson = models.ForeignKey(
-        Lesson, null=True, on_delete=models.SET_NULL, verbose_name="оплаченный урок"
+        "lms.Lesson",
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name="оплаченный урок",
     )
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="сумма оплаты"
