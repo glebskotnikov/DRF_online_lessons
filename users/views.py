@@ -1,19 +1,33 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import (CreateAPIView, DestroyAPIView,
-                                     ListAPIView, RetrieveAPIView,
-                                     UpdateAPIView)
+from rest_framework.generics import (
+    CreateAPIView,
+    DestroyAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    UpdateAPIView,
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from users.serializers import (PaymentSerializer, UserPublicInfoSerializer,
-                               UserSerializer)
+from users.serializers import (
+    PaymentSerializer,
+    UserPublicInfoSerializer,
+    UserSerializer,
+)
 
 from .models import Payment, User
 
 
+@extend_schema(
+    tags=["Users"],
+    summary="Создание нового пользователя",
+)
 class UserCreateAPIView(CreateAPIView):
+    """Создает нового пользователя."""
+
     serializer_class = UserSerializer
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
@@ -24,7 +38,13 @@ class UserCreateAPIView(CreateAPIView):
         user.save()
 
 
+@extend_schema(
+    tags=["Users"],
+    summary="Получение списка всех пользователей",
+)
 class UserListAPIView(ListAPIView):
+    """Выводит список всех пользователей."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
@@ -41,7 +61,13 @@ class UserListAPIView(ListAPIView):
         return Response(data)
 
 
+@extend_schema(
+    tags=["Users"],
+    summary="Детальная информация о пользователе",
+)
 class UserRetrieveAPIView(RetrieveAPIView):
+    """Выводит детальную информацию о пользователе."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
@@ -55,7 +81,13 @@ class UserRetrieveAPIView(RetrieveAPIView):
         return Response(serializer.data)
 
 
+@extend_schema(
+    tags=["Users"],
+    summary="Изменение существующего пользователя",
+)
 class UserUpdateAPIView(UpdateAPIView):
+    """Изменяет существующего пользователя."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
@@ -70,7 +102,13 @@ class UserUpdateAPIView(UpdateAPIView):
             )
 
 
+@extend_schema(
+    tags=["Users"],
+    summary="Удаление существующего пользователя",
+)
 class UserDestroyAPIView(DestroyAPIView):
+    """Удаляет существующего пользователя."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
@@ -89,7 +127,13 @@ class UserDestroyAPIView(DestroyAPIView):
         instance.delete()
 
 
+@extend_schema(
+    tags=["Payments"],
+    summary="Получение списка всех платежей",
+)
 class PaymentListAPIView(ListAPIView):
+    """Выводит список всех платежей пользователя"""
+
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
     filter_backends = [DjangoFilterBackend, OrderingFilter]
