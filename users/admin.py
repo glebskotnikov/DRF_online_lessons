@@ -11,6 +11,7 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = (
+        "id",
         "user",
         "payment_date",
         "course",

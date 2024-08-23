@@ -1,13 +1,8 @@
-from drf_spectacular.utils import extend_schema_view, extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
-from rest_framework.generics import (
-    CreateAPIView,
-    DestroyAPIView,
-    ListAPIView,
-    RetrieveAPIView,
-    UpdateAPIView,
-    get_object_or_404,
-)
+from rest_framework.generics import (CreateAPIView, DestroyAPIView,
+                                     ListAPIView, RetrieveAPIView,
+                                     UpdateAPIView, get_object_or_404)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,7 +10,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from lms.models import Course, Lesson, Subscription
 from lms.paginations import CustomPagination
-from lms.serializers import CourseDetailSerializer, CourseSerializer, LessonSerializer
+from lms.serializers import (CourseDetailSerializer, CourseSerializer,
+                             LessonSerializer)
 from users.permissions import IsModer, IsNotModer, IsOwner
 
 

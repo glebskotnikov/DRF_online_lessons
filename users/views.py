@@ -1,24 +1,21 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import (
-    CreateAPIView,
-    DestroyAPIView,
-    ListAPIView,
-    RetrieveAPIView,
-    UpdateAPIView,
-)
+from rest_framework.generics import (CreateAPIView, DestroyAPIView,
+                                     ListAPIView, RetrieveAPIView,
+                                     UpdateAPIView)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from users.serializers import (
-    PaymentSerializer,
-    UserPublicInfoSerializer,
-    UserSerializer,
-)
+from users.serializers import (PaymentSerializer, UserPublicInfoSerializer,
+                               UserSerializer)
 
 from .models import Payment, User
+from .services import (convert_rub_to_dollars, create_stripe_price,
+                       create_stripe_product, create_stripe_session,
+                       retrieve_stripe_session)
 
 
 @extend_schema(
@@ -139,3 +136,35 @@ class PaymentListAPIView(ListAPIView):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ("course", "lesson", "payment_type")
     ordering_fields = ("payment_date",)
+
+
+@extend_schema(
+    tags=["Payments"],
+    summary="Создание нового платежа",
+)
+class PaymentCreateAPIView(CreateAPIView):
+    """Создает новый платеж."""
+
+    serializer_class = PaymentSerializer
+    queryset = Payment.objects.all()
+    permission_classes = (IsAuthenticated,)
+
+    def perform_create(self, serializer):
+        payment = serializer.save(user=self.request.user)
+        amount_in_dollars = convert_rub_to_dollars(payment.amount)
+        product = create_stripe_product()
+        price = create_stripe_price(amount_in_dollars, product)
+        session_id, payment_link = create_stripe_session(price)
+        payment.session_id = session_id
+        payment.link = payment_link
+        payment.save()
+
+
+@api_view(["GET"])
+def retrieve_stripe_session_view(request, session_id):
+    """Получает данные о сессии в stripe по её идентификатору и отправляет их в ответе."""
+    if request.user.is_authenticated:
+        session = retrieve_stripe_session(session_id)
+        return Response(session)
+    else:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
