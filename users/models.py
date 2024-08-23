@@ -50,10 +50,14 @@ class Payment(models.Model):
     PAYMENT_TYPE_CHOICES = [
         ("cash", "Cash"),
         ("transfer", "Bank Transfer"),
+        ("stripe", "Stripe"),
     ]
     payment_type = models.CharField(
         max_length=10, choices=PAYMENT_TYPE_CHOICES, verbose_name="способ оплаты"
     )
+
+    session_id = models.CharField(max_length=255, verbose_name="id сессии", **NULLABLE)
+    link = models.URLField(max_length=400, verbose_name="ссылка на оплату", **NULLABLE)
 
     class Meta:
         verbose_name = "платеж"
@@ -61,4 +65,4 @@ class Payment(models.Model):
         ordering = ["payment_date"]
 
     def __str__(self):
-        return f"{self.user} {self.payment_date}"
+        return f"{self.user} - {self.amount} ({self.payment_date})"
