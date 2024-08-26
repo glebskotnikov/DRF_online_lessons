@@ -1,5 +1,7 @@
+from celery import group
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.generics import (CreateAPIView, DestroyAPIView,
                                      ListAPIView, RetrieveAPIView,
                                      UpdateAPIView, get_object_or_404)
@@ -12,6 +14,7 @@ from lms.models import Course, Lesson, Subscription
 from lms.paginations import CustomPagination
 from lms.serializers import (CourseDetailSerializer, CourseSerializer,
                              LessonSerializer)
+from lms.tasks import send_information_about_course_update
 from users.permissions import IsModer, IsNotModer, IsOwner
 
 
@@ -59,6 +62,27 @@ class CourseViewSet(ModelViewSet):
         elif self.action == "destroy":
             self.permission_classes = (IsAuthenticated, IsOwner & IsNotModer)
         return super().get_permissions()
+
+    @action(detail=True, methods=["post"], permission_classes=[IsModer | IsOwner])
+    def update_notify(self, request, pk=None):
+        course = self.get_object()
+
+        subscriptions = Subscription.objects.filter(course_id=course.id)
+        email_list = [subscription.user.email for subscription in subscriptions]
+
+        # Отправка email с Celery
+        job = group(
+            send_information_about_course_update.s(email, course.name)
+            for email in email_list
+        )
+        result = job.apply_async()
+
+        return Response(
+            {
+                "message": f"A notification email about course updates was sent to {len(email_list)} user(s)"
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 @extend_schema(
